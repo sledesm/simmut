@@ -74,9 +74,15 @@ describe('simmut', () => {
     it('deletes a part of the model', () => {
         const model = simmut.instance();
         model.set('a.b', 3);
+        model.set('a.h', {value: 'i'});
+        const modelBefore = model.get();
         expect(model.get('a.b')).toBe(3);
         model.del('a.b');
-        expect(model.get('a')).toStrictEqual({});
+        expect(model.get('a')).toStrictEqual({h: {value: 'i'}});
+        const modelAfter = model.get();
+        expect(modelBefore === modelAfter).toBe(false);
+        expect(modelBefore.a === modelAfter.a).toBe(false);
+        expect(modelBefore.a.h === modelAfter.a.h).toBe(true);
     })
     it('delete does nothing when path does not exist', () => {
         const model = simmut.instance();

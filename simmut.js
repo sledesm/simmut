@@ -34,9 +34,18 @@ const instance = (data) => {
 
     const del = (path) => {
         let parts = path.split('.');
+        _model = {
+            ..._model,
+        };
         let iter = _model;
         for (let i = 0; iter && i < parts.length - 1; i++) {
             const part = parts[i];
+            if (iter[part]) {
+                iter[part] = {
+                    ...(iter[part])
+                }
+            }
+
             iter = iter[part];
         }
         if (iter) {
