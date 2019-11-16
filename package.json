@@ -1,5 +1,5 @@
 {
-  "name": "immut",
+  "name": "simmut",
   "version": "1.0.0",
   "description": "Immutable model made simple",
   "main": "immut.js",
