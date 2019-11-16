@@ -1,6 +1,6 @@
 {
   "name": "simmut",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Immutable model made simple",
   "main": "simmut.js",
   "scripts": {
