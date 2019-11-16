@@ -45,13 +45,15 @@ const instance = (data) => {
                     ...(iter[part])
                 }
             }
-
+            Object.freeze(iter);
             iter = iter[part];
         }
         if (iter) {
             const lastPart = parts[parts.length - 1];
             delete iter[lastPart];
         }
+        Object.freeze(iter);
+        Object.freeze(_model);
     }
 
     const _merge = (left, right) => {
@@ -107,10 +109,12 @@ const instance = (data) => {
             };
             const lastPart = parts[parts.length - 1];
             iter[lastPart] = _merge(iter[lastPart], right);
+            Object.freeze(iter);
         } else {
             if (!right || typeof (right) !== 'object')
                 throw new Error('Cannot merge an empty or a non object at top level');
             _model = _merge(_model, right);
+            Object.freeze(_model);
         }
     }
 
@@ -133,13 +137,16 @@ const instance = (data) => {
                     iter[part] = {
                         ...(iter[part] || {})
                     }
+                    Object.freeze(iter);
                     iter = iter[part];
                 } else {
                     iter[part] = newValue;
+                    Object.freeze(iter);
                 }
+  
             }
         }
-
+        Object.freeze(_model);
     }
 
     const get = (path) => {
