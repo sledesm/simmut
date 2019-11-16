@@ -4,7 +4,7 @@
 
 
 ```
-const m=instanceImmutableModel();
+const m=simmut.instance();
 m.set('a.b.c',{'foo':'bar'});
 const first=m.get('a');
 m.set('a.h.j',{'foo2':'bar2'});
