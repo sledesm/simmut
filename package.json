@@ -1,0 +1,22 @@
+{
+  "name": "immut",
+  "version": "1.0.0",
+  "description": "Immutable model made simple",
+  "main": "immut.js",
+  "scripts": {
+    "test": "jest --collect-coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sledesm/immut.git"
+  },
+  "author": "Santiago Ledesma",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sledesm/immut/issues"
+  },
+  "homepage": "https://github.com/sledesm/immut#readme",
+  "devDependencies": {
+    "jest": "^24.9.0"
+  }
+}

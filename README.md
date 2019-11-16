@@ -27,19 +27,30 @@ Example of composing a model
 
 // todoManager deals with a slice of the model
 
-const instanceTodoManager=({get,set,del}) => {
-    const addToDo=(todo)=>{
-        todos=get('list')||[];
+const immut=require('immut');
+
+const instanceTodoManager = ({
+    get,
+    set,
+    del,
+}) => {
+    const addToDo = (todo) => {
+        todos = get('list') || [];
         todos.push(todo);
-        set('list',todos);
+        set('list', todos);
     }
 
-    const getToDos=()=>{
+    const getToDos = () => {
         return get('list');
+    }
+
+    const delToDo = (index) => {
+        del(`list.${index}`);
     }
 
     return {
         addToDo,
+        delToDo,
         getToDos,
     }
 }
@@ -47,18 +58,49 @@ const instanceTodoManager=({get,set,del}) => {
 // The app architect creates the model for the full app
 
 const instanceArchitect = () => {
-    const _model=instanceImmutableModel();
-    const _todoManager=instanceTodoManager({
-        get:(path)=>_model.get(`todo.${path}`),
-        set:(path,value,cloneValue) => _model.set(`todo.${path}`,value,cloneValue),
-        del:(path) => _model.del(`todo.${path}`),
+    const _model = immut.instance();
+    const _todoManager = instanceTodoManager({
+        ...immut.proxy({
+            model: _model,
+            path: 'todos',
+        })
     })
 
     return {
-        getTodoManager:()=>_todoManager,
+        getTodoManager: () => _todoManager,
     }
 }
 
 
+cont architect=instanceArchitect();
+architect.getTodoManager().addToDo({desc:'write some software today'});
+
+// After code above, the model will be a plain javascript object like:
+
+{
+    todos: {
+        list: [{desc: 'write some software today'}]
+    }
+
+}
+
 ```
+
+
+We we can see above, we switch from composing models by using reducers and reducer composition to passing around get, set and del functions which are composable by changing the path they will use in the model.
+
+The benefit of get and set functions is that, being opaque, allow us to have more complex models and even conditional logic at all levels.
+
+Immutability is achieved as the `set` functions alter the root object and all the relative paths to new objects, while keeping not modified objects untouched. In this regard, the actual model is exactly the same as a traditional redux model - a plain javascript object, and our managers behave exactly the same way as reducers: they work with a slice of the model.
+
+## Advantages
+
+With this approach, we avoid a lot of complexity and boilerplate code associated to redux, and the whole call is traceable. 
+
+On the other hand, it is still possible to compose models using proxies, and we can use caching for selectors as every mutation changes the object as it would in a functional immutable approach.
+
+It is extremely small. Full library is 113 line of code!!
+
+
+
 
