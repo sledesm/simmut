@@ -2,20 +2,21 @@
   "name": "simmut",
   "version": "1.0.1",
   "description": "Immutable model made simple",
-  "main": "immut.js",
+  "main": "simmut.js",
   "scripts": {
-    "test": "jest --collect-coverage"
+    "test": "jest --collect-coverage",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sledesm/immut.git"
+    "url": "git+https://github.com/sledesm/simmut.git"
   },
   "author": "Santiago Ledesma",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sledesm/immut/issues"
+    "url": "https://github.com/sledesm/simmut/issues"
   },
-  "homepage": "https://github.com/sledesm/immut#readme",
+  "homepage": "https://github.com/sledesm/simmut#readme",
   "devDependencies": {
     "jest": "^24.9.0"
   }

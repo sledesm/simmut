@@ -1,6 +1,6 @@
-# Immut 
+# SImmut 
 
-## Immutability extremely lightweight and simple
+## Immutability extremely lightweight and Simple
 
 
 ```
@@ -17,7 +17,7 @@ Idea:
 
 Redux and other systems try to use javascript for functional programming, but the issue is that javascript does not support immutability out of the box. Some libraries like immutable try to create "wrappers" around data so that it becomes immutable.
 
-The idea of `immut` is that you have a sealed model and two functions: get & set. Internally, information is stored as a regular javascript object, but whenever you set a value in a path, the full branch it belongs to are new objects, and untouched parts are left the same (thus allowing to have cached selectors based on references)
+The idea of `simmut` is that you have a sealed model and two functions: get & set. Internally, information is stored as a regular javascript object, but whenever you set a value in a path, the full branch it belongs to are new objects, and untouched parts are left the same (thus allowing to have cached selectors based on references)
 
 Composing models can be done by passing a modified `set` & `get` function around so that a prefix is appended (to create model slices).
 
@@ -27,7 +27,7 @@ Example of composing a model
 
 // todoManager deals with a slice of the model
 
-const immut=require('immut');
+const simmut=require('simmut');
 
 const instanceTodoManager = ({
     get,
@@ -58,9 +58,9 @@ const instanceTodoManager = ({
 // The app architect creates the model for the full app
 
 const instanceArchitect = () => {
-    const _model = immut.instance();
+    const _model = simmut.instance();
     const _todoManager = instanceTodoManager({
-        ...immut.proxy({
+        ...simmut.proxy({
             model: _model,
             path: 'todos',
         })
