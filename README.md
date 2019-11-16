@@ -99,8 +99,32 @@ With this approach, we avoid a lot of complexity and boilerplate code associated
 
 On the other hand, it is still possible to compose models using proxies, and we can use caching for selectors as every mutation changes the object as it would in a functional immutable approach.
 
-It is extremely small. Full library is 113 line of code!!
+It is extremely small. Full library is 230 lines of code!!
 
+## Layered models
 
+It allows us to have models where mutations happen on top of layers. 
+
+Please see example below
+
+```
+const simmut=require('simmut');
+
+const model=simmut.instance();
+
+model.addLayer({foo:'bar'});
+model.addLayer({test:'valueTest'});
+
+model.get(); // --> {foo:'bar',test:'valueTest'}
+
+model.set({foo:'bar2'});
+
+model.get(); // --> {foo:'bar2',test:'valueTest'}
+
+model.del('foo');
+// After removing the value in the top layer, the value in the layer below resurfaces
+model.get(); // --> {foo:'bar',test:'valueTest'}
+
+```
 
 

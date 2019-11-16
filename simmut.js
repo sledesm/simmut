@@ -170,7 +170,61 @@ const proxy = ({model, prefix}) => {
     }
 }
 
+const layered = (data) => {
+    let _layered = null;
+    let _model = instance(data);
+
+    const addLayer = (path, layerData) => {
+        if (_layered) {
+            throw new Error('Cannot add layers once data is set');
+        }
+        _model.merge(path, layerData);
+    };
+
+    const get = (...args) => _model.get(...args);
+
+    const set = (...args) => {
+        if (!_layered) {
+            _layered = _model.get();
+        }
+        _model.set(...args);
+    };
+
+    const merge = (...args) => {
+        if (!_layered) {
+            _layered = _model.get();
+        }
+        _model.merge(...args);
+    };
+
+    const _get = (root, path) => {
+        let iter = root;
+        const parts = path.split('.');
+        for (let i = 0; iter && i < parts.length; i++) {
+            const part = parts[i];
+            iter = iter[part];
+        }
+        return iter;
+    }
+    // When we delete a property, the layered one must come up
+    const del = (path) => {
+        _model.del(path);
+        const valueBefore = _get(_layered, path);
+        if (valueBefore !== undefined) {
+            _model.set(path, valueBefore);
+        };
+    };
+    return {
+        addLayer,
+        del,
+        get,
+        merge,
+        set,
+    }
+}
+
 module.exports = {
     instance,
     proxy,
+    layered,
 }

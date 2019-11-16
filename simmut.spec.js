@@ -5,6 +5,10 @@ describe('simmut', () => {
         const model = simmut.instance();
         expect(model.get()).toEqual({});
     });
+    it('creates filled model', () => {
+        const model = simmut.instance({foo: 'bar'});
+        expect(model.get()).toEqual({foo: 'bar'});
+    })
     it('sets correctly a model when no path is passed', () => {
         const model = simmut.instance();
         model.set(null, {foo: 'bar'});
@@ -80,24 +84,7 @@ describe('simmut', () => {
         model.del('a.c.h');
         expect(model.get()).toStrictEqual({a: {b: 3}});
     });
-    it('creates a proxy correctly', () => {
-        const model = simmut.instance();
-        const proxy = simmut.proxy({model, prefix: 'test'});
-        proxy.set('foo', 'bar');
-        expect(model.get('test')).toStrictEqual({foo: 'bar'});
-        expect(proxy.get('foo')).toEqual('bar');
-        proxy.del('foo');
-        expect(proxy.get()).toBeUndefined;
-        expect(model.get()).toStrictEqual({test: {}});
-        proxy.merge('foo', {value: 'bar'});
-        expect(model.get()).toStrictEqual({test: {foo: {value: 'bar'}}});
-        const model2 = simmut.instance();
-        const proxy2 = simmut.proxy({model: model2, prefix: 'test2'});
-        proxy2.set(null, 'bar');
-        expect(proxy2.get()).toEqual('bar');
-        proxy2.merge(null, {value: 'bar'});
-        expect(proxy2.get()).toEqual({value: 'bar'});
-    });
+
     describe('merge', () => {
         it('throws when merging root with non object', () => {
             const model = simmut.instance();
@@ -184,4 +171,55 @@ describe('simmut', () => {
         });
     });
 
-})
+});
+
+describe('proxy', () => {
+    it('creates a proxy correctly', () => {
+        const model = simmut.instance();
+        const proxy = simmut.proxy({model, prefix: 'test'});
+        proxy.set('foo', 'bar');
+        expect(model.get('test')).toStrictEqual({foo: 'bar'});
+        expect(proxy.get('foo')).toEqual('bar');
+        proxy.del('foo');
+        expect(proxy.get()).toBeUndefined;
+        expect(model.get()).toStrictEqual({test: {}});
+        proxy.merge('foo', {value: 'bar'});
+        expect(model.get()).toStrictEqual({test: {foo: {value: 'bar'}}});
+        const model2 = simmut.instance();
+        const proxy2 = simmut.proxy({model: model2, prefix: 'test2'});
+        proxy2.set(null, 'bar');
+        expect(proxy2.get()).toEqual('bar');
+        proxy2.merge(null, {value: 'bar'});
+        expect(proxy2.get()).toEqual({value: 'bar'});
+    });
+});
+
+describe('layered', () => {
+    it('creates a layered model', () => {
+        const layered = simmut.layered({foo: 'bar'});
+        expect(layered.get()).toEqual({foo: 'bar'});
+        layered.addLayer(null, {foo: {value: 'bar'}, foo2: {value: 'bar2'}});
+        layered.set('foo.value', 'barNew');
+        expect(layered.get('foo')).toEqual({value: 'barNew'});
+        layered.del('foo.value');
+        expect(layered.get('foo')).toEqual({value: 'bar'});
+        layered.del('foo.doesNotExist');
+        expect(layered.get('foo')).toEqual({value: 'bar'});
+    });
+    it('fails when trying to add a layer once model mutated', () => {
+        const layered = simmut.layered();
+        layered.set('foo', 'bar');
+        expect(() => {
+            layered.addLayer(null, {foo: 'bar'});
+        }).toThrowError();
+        const layered2 = simmut.layered();
+        layered2.merge('foo', 'bar');
+        expect(() => {
+            layered2.addLayer(null, {foo: 'bar'});
+        }).toThrowError();
+        layered.set('foo', 'bar2');
+        expect(layered.get()).toEqual({'foo': 'bar2'});
+        layered.merge('test', 'testValue');
+        expect(layered.get()).toEqual({'foo': 'bar2', 'test': 'testValue'});
+    });
+});
