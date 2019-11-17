@@ -5,21 +5,31 @@
 
 ```
 const m=simmut.instance();
+
 m.set('a.b.c',{'foo':'bar'});
-const first=m.get('a');
+const first=m.get('a'); // first -> {a:{b:c:{foo:'bar'}}}
+first.a=8; // error!. Object is frozen
+
 m.set('a.h.j',{'foo2':'bar2'});
 const second=m.get('a');
-first===second --> false
-first.b===second.b --> true
+
+first===second --> false (every mutation creates a new model)
+first.b===second.b --> true (but unchanged objects are not recreated)
 ```
+
+
 
 Idea:
 
-Redux and other systems try to use javascript for functional programming, but the issue is that javascript does not support immutability out of the box. Some libraries like immutable try to create "wrappers" around data so that it becomes immutable.
+Redux and other systems try to use javascript for functional programming, but the issue is that javascript does not support immutability out of the box. Some libraries like immutable extend the language by creating new data types instead of using plain javascript objects. That adds an important overhead, both to performance and to usage, as objects need to be transformed back and forth from Immutable types to normal javascript objects.
 
-The idea of `simmut` is that you have a sealed model and two functions: get & set. Internally, information is stored as a regular javascript object, but whenever you set a value in a path, the full branch it belongs to are new objects, and untouched parts are left the same (thus allowing to have cached selectors based on references)
+Other systems, like redux, leave up to the programmer the creation of immutable structures, but it is very common to make mistakes and accidentally write where we should not. Another problem is that because we need to have an extensible paradigm, we need to create actions and reducers and combine the reducers so that a new structure is created every time, needing a lot of boilerplate code.
 
-Composing models can be done by passing a modified `set` & `get` function around so that a prefix is appended (to create model slices).
+The idea of `simmut` is that we replace a model by a model adapter. In order to mutate the model, you need the adapter, but you can get a reference to the model anytime and use it as a plain javascript object (with the advantage that it will be a frozen object that you cannot change even if you want to).
+
+The general problem with model adapters, is that they are hard to compose. We cannot normally create libraries that work on a "slice" of our model (store in redux terms). Redux forces you to use reducers which will return a new copy of the model every time.
+
+Simmut solves the composition problem in a different way. Instead of passing around the model/store/state, we pass proxied adapters. Therefore, selectors, containers and readonly parts of our application can use standard javascript objects (frozen), and object mutators use proxied model adapters.
 
 Example of composing a model
 
@@ -30,22 +40,20 @@ Example of composing a model
 const simmut=require('simmut');
 
 const instanceTodoManager = ({
-    get,
-    set,
-    del,
+    model,
 }) => {
     const addToDo = (todo) => {
-        todos = get('list') || [];
+        todos = model.get('list') || [];
         todos.push(todo);
         set('list', todos);
     }
 
     const getToDos = () => {
-        return get('list');
+        return model.get('list');
     }
 
     const delToDo = (index) => {
-        del(`list.${index}`);
+        model.del(`list.${index}`);
     }
 
     return {
@@ -57,32 +65,39 @@ const instanceTodoManager = ({
 
 // The app architect creates the model for the full app
 
+
 const instanceArchitect = () => {
-    const _model = simmut.instance();
+    const _rootModel=simmut.instance();
+    const _store={
+        'todos':simmut.proxy({model:_rootModel,prefix:'todos'}
+    }
+
     const _todoManager = instanceTodoManager({
-        ...simmut.proxy({
-            model: _model,
-            path: 'todos',
-        })
+        model:_store['todos']
     })
+
+    const getModel=(...args)=>_rootModel.get(...args);
 
     return {
         getTodoManager: () => _todoManager,
+        getModel,
     }
 }
 
 
-cont architect=instanceArchitect();
-architect.getTodoManager().addToDo({desc:'write some software today'});
+const architect=instanceArchitect();
+const todoManager=architect.getTodoManager();
+todoManager.addToDo({desc:'write some software today'});
+architect.getModel() --> {
+                            todos: {
+                                list: [
+                                    {desc: 'write some software today'}
+                                ]
+                            }
 
-// After code above, the model will be a plain javascript object like:
+                         }
 
-{
-    todos: {
-        list: [{desc: 'write some software today'}]
-    }
 
-}
 
 ```
 
