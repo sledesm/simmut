@@ -7,7 +7,7 @@
 const m=simmut.instance();
 
 m.set('a.b.c',{'foo':'bar'});
-const first=m.get('a'); // first -> {a:{b:c:{foo:'bar'}}}
+const first=m.get('a'); // first -> {b:c:{foo:'bar'}}
 first.a=8; // error!. Object is frozen
 
 m.set('a.h.j',{'foo2':'bar2'});
