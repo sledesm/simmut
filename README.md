@@ -16,7 +16,7 @@ m.set('a.h.j',{'foo2':'bar2'});
 const second=m.get('a');
 
 first === second --> false (every mutation creates a new model)
-first.a === second.a
+first.a === second.a --> false (any path to change is recreated)
 first.b === second.b --> true (but unchanged objects are not recreated)
 ```
 
