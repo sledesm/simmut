@@ -7,14 +7,17 @@
 const m=simmut.instance();
 
 m.set('a.b.c',{'foo':'bar'});
-const first=m.get('a'); // first -> {b:c:{foo:'bar'}}
-first.a=8; // error!. Object is frozen
+const first=m.get('a');
+console.log(first); // {b:c:{foo:'bar'}}
+console.log(first.b); // {c:{foo:'bar}}
+first.b=8; // error!. Object is frozen
 
 m.set('a.h.j',{'foo2':'bar2'});
 const second=m.get('a');
 
-first===second --> false (every mutation creates a new model)
-first.b===second.b --> true (but unchanged objects are not recreated)
+first === second --> false (every mutation creates a new model)
+first.a === second.a
+first.b === second.b --> true (but unchanged objects are not recreated)
 ```
 
 
