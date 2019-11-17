@@ -1,5 +1,30 @@
 const simmut = require('simmut');
 
+describe('get', () => {
+    it('retrieves correctly a value', () => {
+        const data = {
+            foo: 'bar'
+        };
+        expect(simmut.get(data, 'foo')).toBe('bar');
+    });
+    it('retrieves undefined if the value not in the model', () => {
+        const data = {};
+        expect(simmut.get(data, 'foo')).toBeUndefined();
+    });
+    it('retrieves the model when model is falsy', () => {
+        const data = null;
+        expect(simmut.get(data, 'foo')).toBe(null);
+    });
+    it('retrieves the model from an instanced model', () => {
+        const model = simmut.instance();
+        model.set('foo', 'bar');
+        expect(model.get('foo')).toBe('bar');
+        expect(simmut.get(model, 'foo')).toBe('bar');
+    });
+
+
+})
+
 describe('simmut', () => {
     it('creates empty model', () => {
         const model = simmut.instance();

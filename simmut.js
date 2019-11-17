@@ -1,3 +1,20 @@
+// Generic get. Given a model and a path, retrieve what's in the path
+const get = (model, path) => {
+    if (model && model.get) {
+        return model.get(path);
+    }
+    if (!path) {
+        return model;
+    }
+    let iter = model;
+    const parts = path.split('.');
+    for (let i = 0; iter && i < parts.length; i++) {
+        const part = parts[i];
+        iter = iter[part];
+    }
+    return iter;
+}
+
 const instance = (data) => {
     let _model = {};
 
@@ -162,17 +179,8 @@ const instance = (data) => {
         Object.freeze(_model);
     }
 
-    const get = (path) => {
-        if (!path) {
-            return _model;
-        }
-        let iter = _model;
-        const parts = path.split('.');
-        for (let i = 0; iter && i < parts.length; i++) {
-            const part = parts[i];
-            iter = iter[part];
-        }
-        return iter;
+    const _get = (path) => {
+        return get(_model, path);
     }
 
 
@@ -180,11 +188,13 @@ const instance = (data) => {
 
     return {
         del,
-        get,
+        get: _get,
         merge,
         set,
     }
 }
+
+
 
 const proxy = ({model, prefix}) => {
     return {
@@ -253,6 +263,7 @@ const layered = (data) => {
 }
 
 module.exports = {
+    get,
     instance,
     proxy,
     layered,
