@@ -24,13 +24,14 @@ first.b === second.b --> true (but unchanged objects are not recreated)
 
 Idea:
 
-Redux and other systems try to use javascript for functional programming, but the issue is that javascript does not support immutability out of the box. Some libraries like immutable extend the language by creating new data types instead of using plain javascript objects. That adds an important overhead, both to performance and to usage, as objects need to be transformed back and forth from Immutable types to normal javascript objects.
+Immutability is a very important property in modern software development. 
+Some systems try to use javascript for functional programming, but the issue is that javascript does not support immutability out of the box. Some libraries like Immutable extend the language by creating new data types instead of using plain javascript objects. That adds an important overhead, both to performance and to usage, as objects need to be transformed back and forth from Immutable types to normal javascript objects.
 
 Other systems, like redux, leave up to the programmer the creation of immutable structures, but it is very common to make mistakes and accidentally write where we should not. Another problem is that because we need to have an extensible paradigm, we need to create actions and reducers and combine the reducers so that a new structure is created every time, needing a lot of boilerplate code.
 
 The idea of `simmut` is that we replace a model by a model adapter. In order to mutate the model, you need the adapter, but you can get a reference to the model anytime and use it as a plain javascript object (with the advantage that it will be a frozen object that you cannot change even if you want to).
 
-The general problem with model adapters, is that they are hard to compose. We cannot normally create libraries that work on a "slice" of our model (store in redux terms). Redux forces you to use reducers which will return a new copy of the model every time.
+The general problem with model adapters, is that they are hard to compose. We cannot normally create libraries that work on a "slice" of our model (store in redux terms). Redux forces you to use reducers which will return a new copy of the model every time, and then compose reducers to create more complex applications.
 
 Simmut solves the composition problem in a different way. Instead of passing around the model/store/state, we pass proxied adapters. Therefore, selectors, containers and readonly parts of our application can use standard javascript objects (frozen), and object mutators use proxied model adapters.
 
@@ -47,8 +48,8 @@ const instanceTodoManager = ({
 }) => {
     const addToDo = (todo) => {
         todos = model.get('list') || [];
-        todos.push(todo);
-        set('list', todos);
+        // Note: We cannot do todos.push(todo) as todos is frozen
+        model.set('list', [...todos,todo]);
     }
 
     const getToDos = () => {
