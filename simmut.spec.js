@@ -9,6 +9,15 @@ describe('simmut', () => {
         const model = simmut.instance({foo: 'bar'});
         expect(model.get()).toEqual({foo: 'bar'});
     })
+    it('throws when setting not basic data types', () => {
+        const model = simmut.instance();
+        expect(() => {
+            model.set('foo', () => null)
+        }).toThrowError();
+        expect(() => {
+            model.set('foo', new Uint8Array(1))
+        }).toThrowError();
+    })
     it('sets correctly a model when no path is passed', () => {
         const model = simmut.instance();
         model.set(null, {foo: 'bar'});
@@ -49,7 +58,6 @@ describe('simmut', () => {
                 string: 'hello',
                 number: 1.2,
                 regex: /a/,
-                func: () => null,
                 array: [1, 2, 3],
                 deepArray: [{a: 1, b: [3, 4]}, 'foo', 3],
                 nullObj: null,
@@ -114,8 +122,17 @@ describe('simmut', () => {
             model.merge('foo', null);
             expect(model.get()).toEqual({foo: null});
         })
+        it('throws when merging not basic data types', () => {
+            const model = simmut.instance();
+            expect(() => {
+                model.merge('foo', () => null)
+            }).toThrowError();
+            expect(() => {
+                model.merge('foo', new Uint8Array(1))
+            }).toThrowError();
+        })
+
         it('merges correctly an object', () => {
-            debugger;
             const model = simmut.instance();
             model.set('test.foo.value', 'bar');
             model.set('test.foo.valueAlt', 'barAlt');
@@ -143,7 +160,6 @@ describe('simmut', () => {
                 string: 'hello',
                 number: 1.2,
                 regex: /a/,
-                func: () => null,
                 array: [1, 2, 3],
                 deepArray: [{a: 1, b: [3, 4]}, 'foo', 3],
                 nullObj: null,

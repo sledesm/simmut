@@ -4,32 +4,41 @@ const instance = (data) => {
     const clone = (value) => {
         switch (typeof (value)) {
             case 'boolean':
-            case 'function':
             case 'number':
             case 'string':
             case 'undefined':
                 return value;
-        }
-        if (value === null) {
-            return value;
-        }
-        if (value instanceof RegExp) {
-            return value;
-        }
-        if (value instanceof Array) {
-            const newArray = [];
-            for (let i = 0; i < value.length; i++) {
-                newArray[i] = clone(value[i]);
+            case 'object': {
+                if (value === null) {
+                    return value;
+                }
+                if (value instanceof RegExp) {
+                    return value;
+                }
+                if (value.buffer && (value.buffer instanceof ArrayBuffer)) {
+                    throw new Error('Models cannot contain typed arrays');
+                }
+                if (value instanceof Array) {
+                    const newArray = [];
+                    for (let i = 0; i < value.length; i++) {
+                        newArray[i] = clone(value[i]);
+                    }
+                    Object.freeze(newArray);
+                    return newArray;
+                }
+                const keys = Object.keys(value);
+                const newObj = {};
+                for (let i = 0; i < keys.length; i++) {
+                    key = keys[i];
+                    newObj[key] = clone(value[key]);
+                }
+                Object.freeze(newObj);
+                return newObj;
             }
-            return newArray;
+            default:
+                throw new Error(`Cannot clone data of type ${typeof (value)}`);
         }
-        const keys = Object.keys(value);
-        const newObj = {};
-        for (let i = 0; i < keys.length; i++) {
-            key = keys[i];
-            newObj[key] = clone(value[key]);
-        }
-        return newObj;
+
     }
 
     const del = (path) => {
@@ -59,17 +68,19 @@ const instance = (data) => {
     const _merge = (left, right) => {
         switch (typeof (right)) {
             case 'boolean':
-            case 'function':
             case 'number':
             case 'string':
             case 'undefined':
                 return right;
-            default:
+            case 'object':
                 if (!right) {
                     return right;
                 }
                 if (right instanceof RegExp) {
                     return right;
+                }
+                if (right.buffer && (right.buffer instanceof ArrayBuffer)) {
+                    throw new Error('Models cannot contain typed arrays');
                 }
                 if (right instanceof Array) {
                     const result = [];
@@ -90,6 +101,8 @@ const instance = (data) => {
                     });
                     return result;
                 }
+            default:
+                throw new Error(`Cannot merge data of type ${typeof (right)}`);
         }
     }
 
@@ -143,7 +156,7 @@ const instance = (data) => {
                     iter[part] = newValue;
                     Object.freeze(iter);
                 }
-  
+
             }
         }
         Object.freeze(_model);
