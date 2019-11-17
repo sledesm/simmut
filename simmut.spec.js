@@ -270,3 +270,22 @@ describe('layered', () => {
         expect(layered.get()).toEqual({'foo': 'bar2', 'test': 'testValue'});
     });
 });
+
+describe('events', () => {
+    it('triggers change event', () => {
+        const model = simmut.instance();
+        const changeHandler = jest.fn(() => null);
+        model.on('change', changeHandler);
+        model.set('foo', 'bar');
+        model.merge('foo', 'bar');
+        model.del('foo');
+        expect(changeHandler).toHaveBeenCalledTimes(3);
+    });
+    it('does not trigger change event after off', () => {
+        const model = simmut.instance();
+        const changeHandler = jest.fn(() => null);
+        model.on('change', changeHandler);
+        model.off('change', changeHandler);
+        expect(changeHandler).not.toHaveBeenCalled();
+    })
+})

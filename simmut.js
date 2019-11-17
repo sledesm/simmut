@@ -1,4 +1,7 @@
+const EventEmitter = require('events');
+
 // Generic get. Given a model and a path, retrieve what's in the path
+// If the model contains a get function, we use that one
 const get = (model, path) => {
     if (model && model.get) {
         return model.get(path);
@@ -17,6 +20,7 @@ const get = (model, path) => {
 
 const instance = (data) => {
     let _model = {};
+    const _eventEmitter = new EventEmitter();
 
     const clone = (value) => {
         switch (typeof (value)) {
@@ -80,6 +84,7 @@ const instance = (data) => {
         }
         Object.freeze(iter);
         Object.freeze(_model);
+        _eventEmitter.emit('change');
     }
 
     const _merge = (left, right) => {
@@ -146,6 +151,7 @@ const instance = (data) => {
             _model = _merge(_model, right);
             Object.freeze(_model);
         }
+        _eventEmitter.emit('change');
     }
 
     const set = (path, value, cloneValue = true) => {
@@ -177,12 +183,15 @@ const instance = (data) => {
             }
         }
         Object.freeze(_model);
+        _eventEmitter.emit('change');
     }
 
     const _get = (path) => {
         return get(_model, path);
     }
 
+    const on = (...args) => _eventEmitter.on(...args);
+    const off = (...args) => _eventEmitter.off(...args);
 
     set(null, data);
 
@@ -191,6 +200,8 @@ const instance = (data) => {
         get: _get,
         merge,
         set,
+        on,
+        off,
     }
 }
 
