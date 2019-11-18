@@ -52,6 +52,9 @@ describe('simmut', () => {
         const model = simmut.instance();
         model.set('foo', 'bar');
         expect(model.get()).toEqual({foo: 'bar'});
+        const sampleArray = [{id: 1}, {id: 2}];
+        model.set('ar', sampleArray);
+        expect(model.get('ar')).toEqual(sampleArray.slice())
     });
     it('sets correctly model in a deep path', () => {
         const model = simmut.instance();
@@ -178,6 +181,33 @@ describe('simmut', () => {
                 }
             });
         });
+        it('merges arrays correctly', () => {
+            const model = simmut.instance([{
+                id: 1,
+                sub: [
+                    {id: '1-1'}
+                ]
+            }]);
+            model.set('0.sub.1', {id: '1-2'});
+            expect(model.get()).toEqual([{
+                id: 1,
+                sub: [
+                    {id: '1-1'},
+                    {id: '1-2'},
+                ]
+            }]);
+            model.merge(null, [undefined, {id: 2}]);
+            expect(model.get()).toEqual([{
+                id: 1,
+                sub: [
+                    {id: '1-1'},
+                    {id: '1-2'},
+                ]
+            },
+            {
+                id: 2,
+            }])
+        })
         it('merges correctly basic data types', () => {
             const model = simmut.instance();
             const right = {

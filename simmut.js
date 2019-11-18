@@ -18,6 +18,17 @@ const get = (model, path) => {
     return iter;
 }
 
+const _duplicate = (item) => {
+    if (!item) {
+        return {};
+    }
+    if (item instanceof Array) {
+        return [...item];
+    } else {
+        return {...item};
+    }
+}
+
 const instance = (data) => {
     let _model = {};
     const _eventEmitter = new EventEmitter();
@@ -64,16 +75,13 @@ const instance = (data) => {
 
     const del = (path) => {
         let parts = path.split('.');
-        _model = {
-            ..._model,
-        };
+        _model = _duplicate(_model);
+
         let iter = _model;
         for (let i = 0; iter && i < parts.length - 1; i++) {
             const part = parts[i];
             if (iter[part]) {
-                iter[part] = {
-                    ...(iter[part])
-                }
+                iter[part] = _duplicate(iter[part]);
             }
             Object.freeze(iter);
             iter = iter[part];
@@ -105,9 +113,16 @@ const instance = (data) => {
                     throw new Error('Models cannot contain typed arrays');
                 }
                 if (right instanceof Array) {
-                    const result = [];
+                    let result;
+                    if (left instanceof Array) {
+                        result = [...left];
+                    } else {
+                        result = [];
+                    }
                     for (let i = 0; i < right.length; i++) {
-                        result[i] = clone(right[i]);
+                        if (right[i] !== undefined) {
+                            result[i] = clone(right[i]);
+                        }
                     }
                     return result;
                 } else {
@@ -137,9 +152,7 @@ const instance = (data) => {
             let iter = _model;
             for (let i = 0; i < parts.length - 1; i++) {
                 const part = parts[i];
-                iter[part] = {
-                    ...(iter[part] || {})
-                }
+                iter[part] = _duplicate(iter[part]);
                 iter = iter[part];
             };
             const lastPart = parts[parts.length - 1];
@@ -163,16 +176,14 @@ const instance = (data) => {
             }
         } else {
             let parts = path.split('.');
-            _model = {
-                ..._model
-            };
+            _model = _duplicate(_model);
+
             iter = _model;
             for (let i = 0; i < parts.length; i++) {
                 const part = parts[i];
                 if (i < parts.length - 1) {
-                    iter[part] = {
-                        ...(iter[part] || {})
-                    }
+                    iter[part] = _duplicate(iter[part]);
+
                     Object.freeze(iter);
                     iter = iter[part];
                 } else {
