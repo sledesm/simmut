@@ -287,6 +287,14 @@ describe('simmut', () => {
             expect(first === second).toBe(false);
             expect(first.a === second.j).toBe(false);
             expect(first.a.b === second.j.b).toBe(true);
+        });
+        it('Reuses immutable object for recurrent merging', () => {
+            const model = simmut.instance();
+            model.set('a.b.foo', {value: 'bar'});
+            const foo = model.get('a.b.foo');
+            model.merge('a.b.foo', foo);
+            const foo2 = model.get('a.b.foo');
+            expect(foo == foo2).toBe(true);
         })
     });
 

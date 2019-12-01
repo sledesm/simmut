@@ -120,6 +120,12 @@ const instance = (data) => {
                     if (!left || !(left instanceof Object)) {
                         return right;
                     }
+                    // If both left and right are frozen and they
+                    // refer to the same object, it means that they are
+                    // equal so we do not have to perform any further merging
+                    if (left === right && Object.isFrozen(left)) {
+                        return right;
+                    }
                 }
 
                 if (right instanceof RegExp) {
