@@ -114,8 +114,16 @@ const instance = (data) => {
                 if (!right) {
                     return right;
                 }
+                // If right is a frozen object and we do not have
+                // a corresponding left, we return the right object
+                if (Object.isFrozen(right)) {
+                    if (!left || !(left instanceof Object)) {
+                        return right;
+                    }
+                }
+
                 if (right instanceof RegExp) {
-                    return right;
+                    return Object.freeze(new RegExp(right));
                 }
                 if (right.buffer && (right.buffer instanceof ArrayBuffer)) {
                     throw new Error('Models cannot contain typed arrays');

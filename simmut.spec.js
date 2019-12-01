@@ -67,7 +67,7 @@ describe('simmut', () => {
         const first = model.get();
         model.set('d', first.a);
         const second = model.get('d');
-        
+
         expect(first.a === second.d);
     })
     it('gets correctly a part of the model', () => {
@@ -255,6 +255,39 @@ describe('simmut', () => {
             model.merge('foo', [1, 2, 3, 4, {a: 'b'}]);
             expect(model.get('foo')).toEqual([1, 2, 3, 4, {a: 'b'}]);
         });
+
+        it('reuses frozen objects when merging', () => {
+            /*eslint-disable*/debugger;/*eslint-enable*/
+            const model = simmut.instance();
+            model.set('a.b.foo', {value: 'bar'});
+            const first = model.get();
+            model.merge('j', first.a);
+            const second = model.get();
+            expect(first === second).toBe(false);
+            expect(first.a === second.j).toBe(true);
+        });
+        it('reuses frozen objects when merging with different types', () => {
+            /*eslint-disable*/debugger;/*eslint-enable*/
+            const model = simmut.instance();
+            model.set('a.b.foo', {value: 'bar'});
+            model.set('j', 'test');
+            const first = model.get();
+            model.merge('j', first.a);
+            const second = model.get();
+            expect(first === second).toBe(false);
+            expect(first.a === second.j).toBe(true);
+        });
+        it('merges correctly with frozen objects', () => {
+            const model = simmut.instance();
+            model.set('a.b.foo', {value: 'bar'});
+            model.set('j.k', {value: 'test'});
+            const first = model.get();
+            model.merge('j', first.a);
+            const second = model.get();
+            expect(first === second).toBe(false);
+            expect(first.a === second.j).toBe(false);
+            expect(first.a.b === second.j.b).toBe(true);
+        })
     });
 
 });
