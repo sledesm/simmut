@@ -45,6 +45,11 @@ const instance = (data) => {
                     return value;
                 }
                 if (value instanceof RegExp) {
+                    return Object.freeze(new RegExp(value));
+                }
+                // If the object is frozen, we assume that it will be 
+                // frozen all the way down
+                if (Object.isFrozen(value)) {
                     return value;
                 }
                 if (value.buffer && (value.buffer instanceof ArrayBuffer)) {

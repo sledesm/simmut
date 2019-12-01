@@ -61,6 +61,15 @@ describe('simmut', () => {
         model.set('a.b.c', {value: 'bar'});
         expect(model.get()).toEqual({a: {b: {c: {value: 'bar'}}}});
     });
+    it('does not clone immutable objects when setting', () => {
+        const model = simmut.instance();
+        model.set('a.b.c', {value: 'bar'});
+        const first = model.get();
+        model.set('d', first.a);
+        const second = model.get('d');
+        
+        expect(first.a === second.d);
+    })
     it('gets correctly a part of the model', () => {
         const model = simmut.instance();
         model.set('a.b.c', {value: 'bar'});
