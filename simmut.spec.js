@@ -269,7 +269,6 @@ describe("simmut", () => {
     });
 
     it("reuses frozen objects when merging", () => {
-      /*eslint-disable*/ debugger; /*eslint-enable*/
       const model = simmut.instance();
       model.set("a.b.foo", { value: "bar" });
       const first = model.get();
@@ -279,7 +278,6 @@ describe("simmut", () => {
       expect(first.a === second.j).toBe(true);
     });
     it("reuses frozen objects when merging with different types", () => {
-      /*eslint-disable*/ debugger; /*eslint-enable*/
       const model = simmut.instance();
       model.set("a.b.foo", { value: "bar" });
       model.set("j", "test");
@@ -308,6 +306,47 @@ describe("simmut", () => {
       const foo2 = model.get("a.b.foo");
       expect(foo == foo2).toBe(true);
     });
+  });
+});
+
+describe("deepFreeze", () => {
+  it("does not freeze not owned properties", () => {
+    function DummyClass() {}
+    DummyClass.prototype.notOwned = { foo: "bar" };
+    const shape1 = new DummyClass();
+    shape1.owned = { value: "bar2" };
+    /*eslint-disable*/ debugger; /*eslint-enable*/
+    const result = simmut.deepFreeze(shape1);
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(Object.isFrozen(result.owned)).toBe(true);
+    expect(Object.isFrozen(result.notOwned)).toBe(false);
+  });
+  it("does not crash on basic types", () => {
+    const res = simmut.deepFreeze("hello world");
+    expect(Object.isFrozen(res)).toBe(true);
+  });
+  it("freezes falsy objects correctly", () => {
+    const res = simmut.deepFreeze(null);
+    expect(Object.isFrozen(res)).toBe(true);
+  });
+  it("freezes deep objects correctly", () => {
+    const res = simmut.deepFreeze({ foo: { value: "bar" } });
+    expect(Object.isFrozen(res)).toBe(true);
+    expect(Object.isFrozen(res.foo)).toBe(true);
+  });
+  it("freezes empty arrays correctly", () => {
+    const res = simmut.deepFreeze([]);
+    expect(Object.isFrozen(res)).toBe(true);
+  });
+  it("freezes deep arrays correctly", () => {
+    const res = simmut.deepFreeze([{ a: 3 }, []]);
+    expect(Object.isFrozen(res)).toBe(true);
+    expect(Object.isFrozen(res[0])).toBe(true);
+  });
+  it("freezes deep arrays of basic types corretly", () => {
+    const res = simmut.deepFreeze([0, 1, 2]);
+    expect(Object.isFrozen(res)).toBe(true);
+    expect(Object.isFrozen(res[0])).toBe(true);
   });
 });
 

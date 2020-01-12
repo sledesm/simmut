@@ -80,7 +80,7 @@ const clone = value => {
 // therefor very slow
 const cloneBooleanArray = value => {
   const result = [];
-  const l = value.length | 0;
+  const l = 0 | value.length;
   for (let i = 0; i < l; i++) {
     result.push(value[i]);
   }
@@ -90,7 +90,7 @@ const cloneBooleanArray = value => {
 // This code is a copy on purpose to be able to get advantage of JIT compilation
 const cloneStringArray = value => {
   const result = [];
-  const l = value.length | 0;
+  const l = 0 | value.length;
   for (let i = 0; i < l; i++) {
     result.push(value[i]);
   }
@@ -99,7 +99,7 @@ const cloneStringArray = value => {
 
 const cloneNumberArray = value => {
   const result = [];
-  const l = value.length | 0;
+  const l = 0 | value.length;
   for (let i = 0; i < l; i++) {
     result.push(value[i]);
   }
@@ -294,9 +294,9 @@ const instance = data => {
     del,
     get: _get,
     merge,
-    set,
+    off,
     on,
-    off
+    set
   };
 };
 
@@ -364,9 +364,43 @@ const layered = data => {
   };
 };
 
+// Smart deep freezer. It does not freeze arrays made out of basic types
+const deepFreeze = iter => {
+  if (!iter) {
+    return iter;
+  }
+  if (typeof iter === "object") {
+    Object.freeze(iter);
+    if (iter instanceof Array) {
+      if (iter.length) {
+        const firstElement = iter[0];
+        // If the first element is not an object, we do not freeze recursively an
+        // array to speed up freezing. We assume non heterogeneous
+        // arrays (that is, all elements of an array are of the same type)
+        if (typeof firstElement === "object") {
+          for (let i = 0; i < iter.length; i++) {
+            deepFreeze(iter[i]);
+          }
+        }
+      }
+    } else {
+      for (key in iter) {
+        if (iter.hasOwnProperty(key)) {
+          const child = iter[key];
+          if (typeof child === "object") {
+            deepFreeze(child);
+          }
+        }
+      }
+    }
+  }
+  return iter;
+};
+
 module.exports = {
+  deepFreeze,
   get,
   instance,
-  proxy,
-  layered
+  layered,
+  proxy
 };
